@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:built_collection/src/list.dart';
 import 'package:hacker_news_client/src/models/comment.dart';
 import 'package:hacker_news_client/src/models/job.dart';
 import 'package:hacker_news_client/src/models/poll.dart';
@@ -86,11 +85,9 @@ class HackerNewsClient {
     return Future.wait(topComments.map((comment) async {
       if (comment.kids.isNotEmpty) {
         var childComments = await comments(comment.kids);
-
-        return comment.rebuild((b) => b..comments = ListBuilder(childComments));
-      } else {
-        return comment;
+        comment.comments = childComments;
       }
+      return comment;
     }));
   }
 
@@ -129,7 +126,7 @@ class HackerNewsClient {
     if (response.body == 'null') {
       return null;
     } else {
-      return Summary.fromJson(response.body);
+      return Summary.fromJson(json.decode(response.body));
     }
   }
 
@@ -141,15 +138,13 @@ class HackerNewsClient {
     if (response.body == 'null') {
       return null;
     } else {
-      final story = Story.fromJson(response.body);
+      final story = Story.fromJson(json.decode(response.body));
 
       if (story.kids.isNotEmpty) {
         final List<Comment> allComments = await comments(story.kids);
-
-        return story.rebuild((b) => b..comments = ListBuilder(allComments));
-      } else {
-        return story;
+        story.comments = allComments;
       }
+      return story;
     }
   }
 
@@ -157,7 +152,7 @@ class HackerNewsClient {
   Future<Comment> comment(int id) async {
     final response = await httpClient.get(itemUrl(id));
 
-    return Comment.fromJson(response.body);
+    return Comment.fromJson(json.decode(response.body));
   }
 
   /// Fetch information about a hacker news user
@@ -165,32 +160,32 @@ class HackerNewsClient {
     final response = await httpClient
         .get('https://hacker-news.firebaseio.com/v0/user/$id.json');
 
-    return User.fromJson(response.body);
+    return User.fromJson(json.decode(response.body));
   }
 
   Future<Job> job(int id) async {
     final response = await httpClient.get(itemUrl(id));
 
-    return Job.fromJson(response.body);
+    return Job.fromJson(json.decode(response.body));
   }
 
   /// Fetch a Poll with all available options and all of the comments
   Future<Poll> poll(int id) async {
     final response = await httpClient.get(itemUrl(id));
-    final poll = Poll.fromJson(response.body);
+    final poll = Poll.fromJson(json.decode(response.body));
     final List<PollOption> allOptions =
         await Future.wait(poll.parts.map((id) => pollOption(id)));
     final List<Comment> allComments = await comments(poll.kids);
+    poll.comments = allComments;
+    poll.options = allOptions;
 
-    return poll.rebuild((b) => b
-      ..comments = ListBuilder(allComments)
-      ..options = ListBuilder(allOptions));
+    return poll;
   }
 
   Future<PollOption> pollOption(int id) async {
     final response = await httpClient.get(itemUrl(id));
 
-    return PollOption.fromJson(response.body);
+    return PollOption.fromJson(json.decode(response.body));
   }
 
   String itemUrl(int id) =>

@@ -1,11 +1,6 @@
 library summary;
 
-import 'dart:convert';
-
-import 'package:built_collection/built_collection.dart';
-import 'package:built_value/built_value.dart';
-import 'package:built_value/serializer.dart';
-import 'package:hacker_news_client/src/models/serializers.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:hacker_news_client/src/models/story_type.dart';
 
 part 'summary.g.dart';
@@ -15,41 +10,67 @@ part 'summary.g.dart';
 ///
 /// It is similar to a Story or Poll, but it does not contain a full list of
 /// comments for those objects nor does it include the poll options for polls.
-abstract class Summary implements Built<Summary, SummaryBuilder> {
-  Summary._();
+// abstract class Summary implements Built<Summary, SummaryBuilder> {
+//   Summary._();
 
-  factory Summary([updates(SummaryBuilder b)]) = _$Summary;
+//   factory Summary([updates(SummaryBuilder b)]) = _$Summary;
 
-  String get by;
+//   String get by;
 
-  @nullable
-  int get descendants;
+//   @nullable
+//   int get descendants;
 
-  int get id;
+//   int get id;
 
-  BuiltList<int> get kids;
+//   BuiltList<int> get kids;
 
-  @nullable
-  int get score;
+//   @nullable
+//   int get score;
 
-  DateTime get time;
+//   DateTime get time;
 
-  @nullable
-  String get title;
+//   @nullable
+//   String get title;
 
-  StoryType get type;
+//   StoryType get type;
 
-  @nullable
-  String get url;
+//   @nullable
+//   String get url;
 
-  String toJson() {
-    return json.encode(serializers.serializeWith(Summary.serializer, this));
-  }
+//   String toJson() {
+//     return json.encode(serializers.serializeWith(Summary.serializer, this));
+//   }
 
-  static Summary fromJson(String jsonString) {
-    return serializers.deserializeWith(
-        Summary.serializer, json.decode(jsonString));
-  }
+//   static Summary fromJson(String jsonString) {
+//     return serializers.deserializeWith(
+//         Summary.serializer, json.decode(jsonString));
+//   }
 
-  static Serializer<Summary> get serializer => _$summarySerializer;
+//   static Serializer<Summary> get serializer => _$summarySerializer;
+// }
+
+@JsonSerializable(nullable: false)
+class Summary extends Object with _$SummarySerializerMixin {
+  final String by;
+  final int descendants;
+  final int id;
+  final List<int> kids;
+  final int score;
+  final DateTime time;
+  final String title;
+  final StoryType type;
+  final String url;
+  Summary({
+    this.by,
+    this.descendants,
+    this.id,
+    this.kids,
+    this.score,
+    this.time,
+    this.title,
+    this.type,
+    this.url,
+  });
+  factory Summary.fromJson(Map<String, dynamic> json) =>
+      _$SummaryFromJson(json);
 }
